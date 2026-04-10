@@ -361,68 +361,100 @@ const P = {
 "O-C-E-A-N-": { s: "……嗯。都行。随便。", sd: "终极淡人，对一切都无所谓。佛到已经没有自我，你是传说中那个「无所谓」本人——但说不定，这才是最高境界。", d: "你以为我无所谓？我是懒得跟你计较", dd: "你的淡漠不是真的什么都不在乎，是在乎过之后觉得太累了。每一次「随便」背后都是一句咽回去的话。", dt: "machiavellianism+narcissism" }
 };
 
-// ==================== ADAPTIVE QUESTION BANK ====================
-// Round 1: Core questions (8 mandatory) — 1 per Big Five + 1 per Dark Triad
-// Round 2: Follow-up questions (up to 7) — only asked if Round 1 answer was ambiguous (score=1)
-
+// ==================== ADAPTIVE QUESTION BANK (32 questions, 4 per dimension) ====================
 const Q_BANK = {
-  // === BIG FIVE: Round 1 (core) + Round 2 (follow-up) per dimension ===
-  E: {
-    r1: {dim:'E', q:'周五终于有空了，你的第一反应是？', opts:[
-      {t:'发群里喊人出去浪',sc:{E:2}},{t:'终于可以不用说话了，谢天谢地',sc:{E:0}},{t:'看看有没有什么新展/活动可以去',sc:{E:1}},{t:'点外卖开始追剧，谁也别找我',sc:{E:0}}]},
-    r2: {dim:'E', q:'到了一个全是陌生人的聚会，你会？', opts:[
-      {t:'主动出击，跟每个人打招呼',sc:{E:2}},{t:'找一个看起来好说话的人聊',sc:{E:1}},{t:'找个角落呆着玩手机',sc:{E:0}},{t:'找到认识的人就好了，找不到就走',sc:{E:0}}]}
-  },
-  O: {
-    r1: {dim:'O', q:'刷到一个你完全没听过的新概念，你会？', opts:[
-      {t:'立刻开3个标签页深入研究',sc:{O:2}},{t:'觉得挺有意思但划走了',sc:{O:1}},{t:'跟我有什么关系',sc:{O:0}},{t:'收藏=学会，先收了再说',sc:{O:1}}]},
-    r2: {dim:'O', q:'菜单上有一道你完全没听过的菜，你会？', opts:[
-      {t:'点！就爱试新东西',sc:{O:2}},{t:'先搜一下什么味道再决定',sc:{O:1}},{t:'还是点自己常吃的吧',sc:{O:0}},{t:'问朋友推荐',sc:{O:0}}]}
-  },
-  C: {
-    r1: {dim:'C', q:'明天有个重要deadline，你现在的状态是？', opts:[
-      {t:'早就做完了，正在检查第三遍',sc:{C:2}},{t:'差不多了，最后润色一下',sc:{C:1}},{t:'还没开始，但我有信心通宵搞定',sc:{C:0}},{t:'deadline是第一生产力，我还在刷手机',sc:{C:0}}]},
-    r2: {dim:'C', q:'制定了一个健身/读书/早起计划，通常能坚持多久？', opts:[
-      {t:'一直在坚持，已经是习惯了',sc:{C:2}},{t:'能坚持一段时间但会中断',sc:{C:1}},{t:'三天打鱼两天晒网',sc:{C:0}},{t:'计划？制定的那一刻就是巅峰',sc:{C:0}}]}
-  },
-  A: {
-    r1: {dim:'A', q:'朋友跟你吐槽ta的烂事，你会？', opts:[
-      {t:'认真倾听+安慰，ta需要一个出口',sc:{A:2}},{t:'帮ta分析问题出在哪',sc:{A:1}},{t:'直接说"你也有问题吧"',sc:{A:0}},{t:'表面附和，心里想"又来了"',sc:{A:0}}]},
-    r2: {dim:'A', q:'有人请你帮忙，但你真的很忙/不想帮，你会？', opts:[
-      {t:'还是会帮，不好意思拒绝',sc:{A:2}},{t:'坦诚说自己忙，建议找别人',sc:{A:1}},{t:'直接说"不行"',sc:{A:0}},{t:'答应但拖着不做',sc:{A:0}}]}
-  },
-  N: {
-    r1: {dim:'N', q:'发了条消息对方一直没回，你的内心活动是？', opts:[
-      {t:'在忙吧，等等就好',sc:{N:0}},{t:'开始反复检查自己说的话有没有问题',sc:{N:2}},{t:'有点不安但强迫自己不去想',sc:{N:1}},{t:'无所谓，爱回不回',sc:{N:0}}]},
-    r2: {dim:'N', q:'被领导/老师当众批评了，你之后会？', opts:[
-      {t:'反复回想，越想越难受',sc:{N:2}},{t:'难受一会儿但能调整过来',sc:{N:1}},{t:'分析批评是否合理，合理就改',sc:{N:0}},{t:'无所谓，该干嘛干嘛',sc:{N:0}}]}
-  },
-  // === DARK TRIAD: Round 1 (core) + Round 2 (follow-up) per dimension ===
-  narcissism: {
-    r1: {dim:'narcissism', q:'你做了一个你觉得很牛的东西，但没人注意到。你的反应是？', opts:[
-      {t:'无所谓，我自己知道就行',sc:{narcissism:0}},{t:'主动分享，好东西就该被看到',sc:{narcissism:1}},{t:'默默生气——你们不识货',sc:{narcissism:2}},{t:'算了，可能也没那么好',sc:{narcissism:0}}]},
-    r2: {dim:'narcissism', q:'如果有一面只有你能看到的"真话镜"，你觉得它会对你说什么？', opts:[
-      {t:'"你其实没有自己以为的那么好"',sc:{narcissism:0}},{t:'"你比大多数人想象的要强"',sc:{narcissism:2}},{t:'"你还可以"',sc:{narcissism:1}},{t:'"你跟别人差不多"',sc:{narcissism:0}}]}
-  },
-  machiavellianism: {
-    r1: {dim:'machiavellianism', q:'你发现同事犯了个错，但ta不知道你知道。你会？', opts:[
+  E: [
+    {dim:'E', q:'你的手机突然响了，一看是个不太熟的人打来的电话。你的第一反应？', opts:[
+      {t:'接啊，说不定有什么好事',sc:{E:2}},{t:'盯着屏幕看到它停止震动，松了口气',sc:{E:0}},{t:'先让它响一会儿，做好心理准备再接',sc:{E:1}},{t:'挂掉，发微信问"啥事"',sc:{E:0}}]},
+    {dim:'E', q:'别人说你"社牛"，你内心更接近哪句？', opts:[
+      {t:'确实，人来疯就是我的超能力',sc:{E:2}},{t:'啊？我只是不想冷场而已',sc:{E:1}},{t:'我只是在伪装社牛的资深社恐',sc:{E:0}},{t:'我需要充电三天才能社交一次',sc:{E:0}}]},
+    {dim:'E', q:'网上冲浪的时候，你更像？', opts:[
+      {t:'评论区活跃分子，到处串门水楼',sc:{E:2}},{t:'偶尔评论，主要点赞',sc:{E:1}},{t:'纯潜水，看戏不说话',sc:{E:0}},{t:'我连点赞都懒得点',sc:{E:0}}]},
+    {dim:'E', q:'开黑的时候，你的语音频道状态通常是？', opts:[
+      {t:'全程不停说话，队友让我闭嘴那种',sc:{E:2}},{t:'报点+指挥，该说的说',sc:{E:1}},{t:'默认静音，打字交流',sc:{E:0}},{t:'我更喜欢单机',sc:{E:0}}]}
+  ],
+  O: [
+    {dim:'O', q:'刷到一个完全看不懂的抽象视频，弹幕全在刷"典中典"。你的反应？', opts:[
+      {t:'立刻去扒前因后果，考古到凌晨三点',sc:{O:2}},{t:'看两眼觉得有意思，但不深究',sc:{O:1}},{t:'看不懂就划走，不浪费时间',sc:{O:0}},{t:'收藏了，虽然我大概率不会再看',sc:{O:1}}]},
+    {dim:'O', q:'有人跟你安利一个你从没听过的小众游戏/番剧/音乐风格，你？', opts:[
+      {t:'好耶！新坑！立刻加入',sc:{O:2}},{t:'先看看评价再决定要不要入坑',sc:{O:1}},{t:'我的坑够多了谢谢',sc:{O:0}},{t:'小众？那不就是没人玩/看吗',sc:{O:0}}]},
+    {dim:'O', q:'突然某一天，你意识到自己一直坚信的某个观念可能是错的。你？', opts:[
+      {t:'兴奋——我要重新研究这个问题',sc:{O:2}},{t:'有点不舒服但愿意接受',sc:{O:1}},{t:'不可能，我不会错的',sc:{O:0}},{t:'无所谓，不影响我吃饭',sc:{O:0}}]},
+    {dim:'O', q:'你刷到一篇"颠覆认知"的长文，你更可能？', opts:[
+      {t:'逐字读完，顺手查了三篇论文',sc:{O:2}},{t:'读了个大概，觉得有道理',sc:{O:1}},{t:'太长不看，等别人总结',sc:{O:0}},{t:'标题党罢了，不点',sc:{O:0}}]}
+  ],
+  C: [
+    {dim:'C', q:'DDL还有24小时，你现在的状态是？', opts:[
+      {t:'早就做完了，现在在优化第三版',sc:{C:2}},{t:'差不多了，再润色一下',sc:{C:1}},{t:'刚打开文档，但我有信心通宵搞定',sc:{C:0}},{t:'DDL是第一生产力，我还在刷手机',sc:{C:0}}]},
+    {dim:'C', q:'别人说你"执行力强"，你内心更接近哪句？', opts:[
+      {t:'是的，事情本来就该被推进',sc:{C:2}},{t:'啊，有时候吧',sc:{C:1}},{t:'我被逼到最后确实执行力超强...',sc:{C:0}},{t:'他是不是在阴阳我',sc:{C:0}}]},
+    {dim:'C', q:'你的游戏背包/桌面/文件夹通常是什么状态？', opts:[
+      {t:'分类整齐，强迫症看了都舒服',sc:{C:2}},{t:'大体有序，偶尔乱一下',sc:{C:1}},{t:'一片混沌但我知道东西在哪',sc:{C:0}},{t:'新建文件夹(2)(2)(3)_最终版_改改改',sc:{C:0}}]},
+    {dim:'C', q:'下定决心"从明天开始早睡/健身/学习"，通常能坚持多久？', opts:[
+      {t:'已经坚持了很久，变成习惯了',sc:{C:2}},{t:'能坚持一段时间但会中断',sc:{C:1}},{t:'立flag的那一刻就是巅峰',sc:{C:0}},{t:'我甚至懒得立flag了',sc:{C:0}}]}
+  ],
+  A: [
+    {dim:'A', q:'群里有人发了一个你觉得离谱到炸裂的观点，你？', opts:[
+      {t:'算了，每个人有自己的想法',sc:{A:2}},{t:'委婉地说"也有另一种看法"',sc:{A:1}},{t:'直接开怼，不吐不快',sc:{A:0}},{t:'截图发到另一个群里吐槽',sc:{A:0}}]},
+    {dim:'A', q:'朋友深夜给你发了一大段丧丧的文字，你？', opts:[
+      {t:'认真看完每一个字，然后慢慢回复安慰',sc:{A:2}},{t:'帮ta分析一下问题出在哪',sc:{A:1}},{t:'回个"啊？"然后等ta继续说',sc:{A:0}},{t:'表面"抱抱"，心里想"又来了"',sc:{A:0}}]},
+    {dim:'A', q:'组队打本/做项目，有个人一直划水摸鱼。你？', opts:[
+      {t:'算了，我多做一点就好了',sc:{A:2}},{t:'私下提醒ta一下',sc:{A:1}},{t:'当场点名，公开处刑',sc:{A:0}},{t:'默默记住，下次不带ta',sc:{A:0}}]},
+    {dim:'A', q:'有人夸你"你人真好"，你内心OS是？', opts:[
+      {t:'开心，被认可的感觉不错',sc:{A:2}},{t:'嗯...这是夸我还是说我好欺负？',sc:{A:1}},{t:'谢谢，但我不想当老好人',sc:{A:0}},{t:'"好人"是不是就是"没用"的意思',sc:{A:0}}]}
+  ],
+  N: [
+    {dim:'N', q:'发了条消息对方一直没回，过了两个小时了。你现在在干嘛？', opts:[
+      {t:'在忙吧，等等就好',sc:{N:0}},{t:'已经把聊天记录翻回去检查了三遍',sc:{N:2}},{t:'有点不安但在强迫自己不去想',sc:{N:1}},{t:'无所谓，爱回不回',sc:{N:0}}]},
+    {dim:'N', q:'凌晨三点，你躺在床上睡不着。脑子里在想什么？', opts:[
+      {t:'白天的社死瞬间正在循环播放',sc:{N:2}},{t:'想些有的没的但能调节自己',sc:{N:1}},{t:'刷手机直到困',sc:{N:0}},{t:'倒头就睡，失眠是什么',sc:{N:0}}]},
+    {dim:'N', q:'你发了一条朋友圈/动态，过了半小时只有2个赞。你？', opts:[
+      {t:'开始反复检查是不是发的内容有问题',sc:{N:2}},{t:'有点失落但告诉自己无所谓',sc:{N:1}},{t:'正常啊，又不是所有人都会看',sc:{N:0}},{t:'删了吧，当无事发生',sc:{N:2}}]},
+    {dim:'N', q:'考完试/面试完/提交完方案后，你通常？', opts:[
+      {t:'反复回忆哪里可能出了问题，越想越焦虑',sc:{N:2}},{t:'有点紧张但能控制',sc:{N:1}},{t:'交了就忘了，结果改变不了',sc:{N:0}},{t:'该吃吃该喝喝，没啥好想的',sc:{N:0}}]}
+  ],
+  narcissism: [
+    {dim:'narcissism', q:'你做了个自己觉得超牛的东西（作品/成绩/操作），但没人注意到。你的反应？', opts:[
+      {t:'无所谓，我自己知道就行',sc:{narcissism:0}},{t:'主动发出来——好东西就该被看到',sc:{narcissism:1}},{t:'默默生气——你们不识货',sc:{narcissism:2}},{t:'算了，可能也没那么好',sc:{narcissism:0}}]},
+    {dim:'narcissism', q:'打游戏carry了全场但没人说"牛"。你？', opts:[
+      {t:'自己知道就行，不需要别人认可',sc:{narcissism:0}},{t:'忍不住在群里发了个战绩截图',sc:{narcissism:1}},{t:'这些人眼睛是瞎的吗？',sc:{narcissism:2}},{t:'无所谓，我玩游戏是为了自己开心',sc:{narcissism:0}}]},
+    {dim:'narcissism', q:'如果有一面只有你能看到的"真话镜"，你觉得它会对你说什么？', opts:[
+      {t:'"你其实没有自己以为的那么好"',sc:{narcissism:0}},{t:'"你比大多数人想象的要强"',sc:{narcissism:2}},{t:'"你还可以吧"',sc:{narcissism:1}},{t:'"你跟别人差不多"',sc:{narcissism:0}}]},
+    {dim:'narcissism', q:'有人发了一条和你类似的成就/作品的动态，你的第一反应？', opts:[
+      {t:'真心为ta高兴',sc:{narcissism:0}},{t:'为ta高兴，但忍不住想"我也行啊"',sc:{narcissism:1}},{t:'就这？我比ta强多了吧',sc:{narcissism:2}},{t:'无感，滑走了',sc:{narcissism:0}}]}
+  ],
+  machiavellianism: [
+    {dim:'machiavellianism', q:'你发现同事/同学犯了个错，但ta不知道你知道。你会？', opts:[
       {t:'直接告诉ta',sc:{machiavellianism:0}},{t:'先存着，以后说不定用得上',sc:{machiavellianism:2}},{t:'看看能不能帮ta悄悄改了',sc:{machiavellianism:0}},{t:'不关我事',sc:{machiavellianism:1}}]},
-    r2: {dim:'machiavellianism', q:'你知道一个很有用的信息/资源，你会？', opts:[
-      {t:'直接分享给大家',sc:{machiavellianism:0}},{t:'先自己用够了再分享',sc:{machiavellianism:1}},{t:'只分享给对我有用的人',sc:{machiavellianism:2}},{t:'随缘，有人问就说',sc:{machiavellianism:0}}]}
-  },
-  chaos: {
-    r1: {dim:'chaos', q:'玩游戏时，你更喜欢？', opts:[
-      {t:'按规则来，公平竞争',sc:{chaos:0}},{t:'找漏洞和bug，规则是用来打破的',sc:{chaos:2}},{t:'赢了就行，过程不重要',sc:{chaos:1}},{t:'享受过程，输赢无所谓',sc:{chaos:0}}]},
-    r2: {dim:'chaos', q:'如果可以不被发现，你会闯一个你觉得不合理的红灯吗？', opts:[
-      {t:'不会，规则就是规则',sc:{chaos:0}},{t:'看情况，如果确实没车的话...',sc:{chaos:1}},{t:'会，不合理的规则不值得遵守',sc:{chaos:2}},{t:'看有没有摄像头',sc:{chaos:1}}]}
-  }
+    {dim:'machiavellianism', q:'你掌握了一个很有用的信息/资源/攻略，你会？', opts:[
+      {t:'直接分享给大家',sc:{machiavellianism:0}},{t:'先自己用够了再分享',sc:{machiavellianism:1}},{t:'只分享给对我有用的人',sc:{machiavellianism:2}},{t:'随缘，有人问就说',sc:{machiavellianism:0}}]},
+    {dim:'machiavellianism', q:'两个朋友闹矛盾都来找你诉苦，你？', opts:[
+      {t:'尽量公正地帮他们调解',sc:{machiavellianism:0}},{t:'两边都安慰，但不站队',sc:{machiavellianism:1}},{t:'了解双方底牌后选择对我更有利的那边',sc:{machiavellianism:2}},{t:'不想掺和，让他们自己解决',sc:{machiavellianism:0}}]},
+    {dim:'machiavellianism', q:'和一个不太熟的人合作做事，你会？', opts:[
+      {t:'坦诚相待，有话直说',sc:{machiavellianism:0}},{t:'先观察对方的弱点和习惯',sc:{machiavellianism:2}},{t:'保持友好但不暴露太多',sc:{machiavellianism:1}},{t:'让ta多做，我来把关',sc:{machiavellianism:1}}]}
+  ],
+  chaos: [
+    {dim:'chaos', q:'游戏里发现了一个明显的bug/漏洞，你？', opts:[
+      {t:'反馈给官方，等修复',sc:{chaos:0}},{t:'先自己偷偷用一波再说',sc:{chaos:2}},{t:'发到论坛让大家一起用，加速修复',sc:{chaos:1}},{t:'无视，正常玩',sc:{chaos:0}}]},
+    {dim:'chaos', q:'"规则是用来打破的"——你对这句话的态度？', opts:[
+      {t:'完全同意，不合理的规则就该被挑战',sc:{chaos:2}},{t:'看情况，有的规则确实过时了',sc:{chaos:1}},{t:'不同意，规则是秩序的基础',sc:{chaos:0}},{t:'无所谓，我不太关心规则',sc:{chaos:0}}]},
+    {dim:'chaos', q:'如果可以不被发现，你会闯一个你觉得不合理的红灯吗？', opts:[
+      {t:'不会，规则就是规则',sc:{chaos:0}},{t:'看情况，确实没车的话...',sc:{chaos:1}},{t:'会，不合理的规则不值得遵守',sc:{chaos:2}},{t:'看有没有摄像头',sc:{chaos:1}}]},
+    {dim:'chaos', q:'突然某一天你意识到这世界的很多规则都是人为编造的，本质上毫无意义。你？', opts:[
+      {t:'是这样的，所以我选择按自己的规则活',sc:{chaos:2}},{t:'也许是，也许不是',sc:{chaos:1}},{t:'这想法太极端了，规则让社会运转',sc:{chaos:0}},{t:'道理我都懂，但该遵守还是得遵守',sc:{chaos:0}}]}
+  ]
 };
 
+const ALL_DIMS = ['E','O','C','A','N','narcissism','machiavellianism','chaos'];
+
 // ==================== STATE ====================
-let activeQuestions = []; // dynamically built question list
+let activeQuestions = [];
 let currentQ = 0;
 let answers = [];
 let resultData = null;
+// Track how many questions asked per dimension and cumulative scores
+let dimScores = {};   // { E: 3, O: 1, ... }
+let dimCounts = {};   // { E: 2, O: 1, ... }
 
 // ==================== PAGE NAVIGATION ====================
 function showSection(id) {
@@ -431,39 +463,62 @@ function showSection(id) {
   window.scrollTo(0, 0);
 }
 
-// ==================== ADAPTIVE ENGINE ====================
-function buildRound1() {
-  // Interleave: Big Five and Dark Triad for variety
-  const bf = ['E','O','C','A','N'];
-  const dt = ['narcissism','machiavellianism','chaos'];
-  const seq = [];
-  // E, O, narcissism, C, A, machiavellianism, N, chaos
-  seq.push(Q_BANK.E.r1);
-  seq.push(Q_BANK.O.r1);
-  seq.push(Q_BANK.narcissism.r1);
-  seq.push(Q_BANK.C.r1);
-  seq.push(Q_BANK.A.r1);
-  seq.push(Q_BANK.machiavellianism.r1);
-  seq.push(Q_BANK.N.r1);
-  seq.push(Q_BANK.chaos.r1);
-  return seq;
+// ==================== CONFIDENCE-BASED ADAPTIVE ENGINE ====================
+// Confidence rules:
+// After N questions answered for a dimension (each scored 0-2, max cumulative = N*2):
+//   1 question:  cumulative 0 or 2 → HIGH confidence (clear leaning), 1 → LOW
+//   2 questions: cumulative ≥3 or ≤1 → HIGH, =2 → LOW (still ambiguous)
+//   3 questions: cumulative ≥4 or ≤2 → HIGH, =3 → LOW
+//   4 questions: always HIGH (forced decision, max questions reached)
+
+function isConfident(dim) {
+  const count = dimCounts[dim] || 0;
+  const score = dimScores[dim] || 0;
+  if (count === 0) return false;
+  if (count >= 4) return true; // max questions reached
+  const maxScore = count * 2;
+  const midpoint = count; // exact middle
+  // HIGH if clearly above or below midpoint
+  if (count === 1) return score !== 1; // 0 or 2 → confident
+  if (count === 2) return score >= 3 || score <= 1; // not exactly 2
+  if (count === 3) return score >= 4 || score <= 2; // not exactly 3
+  return true;
 }
 
-function buildRound2() {
-  // Check Round 1 answers: if score == 1 (ambiguous), add follow-up
-  const round2 = [];
-  const allDims = ['E','O','C','A','N','narcissism','machiavellianism','chaos'];
+function buildRound1() {
+  // Interleave: E, O, narcissism, C, A, machiavellianism, N, chaos
+  return [
+    Q_BANK.E[0], Q_BANK.O[0], Q_BANK.narcissism[0],
+    Q_BANK.C[0], Q_BANK.A[0], Q_BANK.machiavellianism[0],
+    Q_BANK.N[0], Q_BANK.chaos[0]
+  ];
+}
 
-  answers.filter(Boolean).forEach((a, i) => {
-    const dim = a.dim;
-    const scoreVal = Object.values(a.scores)[0]; // each q has one dim score
-    // Ambiguous = scored 1 (middle ground)
-    if (scoreVal === 1 && Q_BANK[dim] && Q_BANK[dim].r2) {
-      round2.push(Q_BANK[dim].r2);
+function buildNextRound() {
+  // For each dimension that is still LOW confidence, add the next question
+  const followUps = [];
+  const dimOrder = ['E','O','narcissism','C','A','machiavellianism','N','chaos'];
+  for (const dim of dimOrder) {
+    if (!isConfident(dim)) {
+      const count = dimCounts[dim] || 0;
+      if (count < Q_BANK[dim].length) {
+        followUps.push(Q_BANK[dim][count]); // next unasked question
+      }
     }
-  });
+  }
+  return followUps;
+}
 
-  return round2;
+function recalcDimScores() {
+  // Recalculate from answers array
+  dimScores = {};
+  dimCounts = {};
+  answers.filter(Boolean).forEach(a => {
+    const dim = a.dim;
+    const scoreVal = Object.values(a.scores)[0];
+    dimScores[dim] = (dimScores[dim] || 0) + scoreVal;
+    dimCounts[dim] = (dimCounts[dim] || 0) + 1;
+  });
 }
 
 // ==================== QUIZ LOGIC ====================
@@ -471,6 +526,8 @@ function startQuiz() {
   currentQ = 0;
   answers = [];
   resultData = null;
+  dimScores = {};
+  dimCounts = {};
   activeQuestions = buildRound1();
   showSection('quiz');
   renderQuestion();
@@ -546,11 +603,14 @@ function selectOption(idx) {
   setTimeout(() => {
     currentQ++;
 
-    // After finishing Round 1 (8 questions), dynamically append Round 2
-    if (currentQ === 8 && activeQuestions.length === 8) {
-      const r2 = buildRound2();
-      if (r2.length > 0) {
-        activeQuestions = activeQuestions.concat(r2);
+    // After each answer, recalc confidence and check if we need more questions
+    recalcDimScores();
+
+    // If we've finished the current question list, try to build more
+    if (currentQ >= activeQuestions.length) {
+      const nextBatch = buildNextRound();
+      if (nextBatch.length > 0) {
+        activeQuestions = activeQuestions.concat(nextBatch);
       }
     }
 
@@ -564,13 +624,13 @@ function selectOption(idx) {
 
 function prevQuestion() {
   if (currentQ > 0) {
-    // If going back into Round 1 from Round 2, trim Round 2 questions
-    // (they'll be recalculated when we move forward again)
-    if (currentQ <= 8 && activeQuestions.length > 8) {
-      activeQuestions = activeQuestions.slice(0, 8);
-      answers = answers.slice(0, 8);
+    // Trim any future questions beyond current position (they'll be recalculated)
+    if (currentQ < activeQuestions.length) {
+      activeQuestions = activeQuestions.slice(0, currentQ);
+      answers = answers.slice(0, currentQ);
     }
     currentQ--;
+    recalcDimScores();
     renderQuestion();
   }
 }
