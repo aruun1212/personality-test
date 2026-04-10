@@ -846,6 +846,15 @@ function generateShareCard() {
   clone.style.cssText = 'position:absolute;left:0;top:0;width:375px;box-sizing:border-box;background:#0a0a0f;padding:30px 24px;overflow:hidden;z-index:-9999;opacity:1;';
   document.body.appendChild(clone);
 
+  // Copy canvas content (cloneNode doesn't copy canvas pixel data)
+  const srcCanvas = template.querySelector('canvas');
+  const dstCanvas = clone.querySelector('canvas');
+  if (srcCanvas && dstCanvas) {
+    dstCanvas.width = srcCanvas.width;
+    dstCanvas.height = srcCanvas.height;
+    dstCanvas.getContext('2d').drawImage(srcCanvas, 0, 0);
+  }
+
   // Wait a frame for layout to settle
   requestAnimationFrame(() => {
     html2canvas(clone, {
