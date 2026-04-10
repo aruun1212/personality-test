@@ -491,18 +491,15 @@ function renderQuestion() {
   }
   document.getElementById('progressFill').style.width = `${visualPct}%`;
 
-  // Fun contextual hints
-  const hints = [
-    '开始灵魂拷问...', '继续挖掘...', '越来越有意思了', '嗯，有点意思...',
-    '快到核心了', '灵魂正在被扫描...', '差不多摸清你了', '最后几个拷问...'
-  ];
-  const remainQ = activeQuestions.length - currentQ;
-  let hint;
-  if (remainQ <= 1) hint = '🔥 最后一问！';
-  else if (remainQ <= 3) hint = '✨ 马上就好...';
-  else if (currentQ < hints.length) hint = hints[currentQ];
-  else hint = '🔍 深入灵魂深处...';
-  document.getElementById('progressHint').textContent = hint;
+  // Fun contextual hints (only show for first 4 questions, then hide)
+  const hints = ['开始灵魂拷问...', '继续挖掘...', '越来越有意思了', '嗯，有点意思...'];
+  const hintEl = document.getElementById('progressHint');
+  if (currentQ < hints.length) {
+    hintEl.textContent = hints[currentQ];
+    hintEl.style.opacity = '1';
+  } else {
+    hintEl.style.opacity = '0';
+  }
 
   const qText = document.getElementById('questionText');
   const optList = document.getElementById('optionsList');
