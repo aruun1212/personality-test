@@ -73,7 +73,9 @@ body {
   padding: 16px 20px; font-size: 15px; color: var(--text-primary); cursor: pointer;
   text-align: left; line-height: 1.4; transition: all 0.2s; position: relative; overflow: hidden;
 }
-.option-btn:hover { background: var(--bg-card-hover); border-color: var(--neon-purple); }
+@media (hover: hover) {
+  .option-btn:hover { background: var(--bg-card-hover); border-color: var(--neon-purple); }
+}
 .option-btn:active { transform: scale(0.98); }
 .option-btn.selected {
   border-color: var(--neon-purple); background: rgba(168, 85, 247, 0.15);
