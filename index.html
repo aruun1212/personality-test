@@ -514,17 +514,20 @@ function renderQuestion() {
     qText.textContent = q.q;
     qText.classList.remove('fade-out');
     optList.innerHTML = '';
+    const savedAnswer = answers[currentQ];
     q.opts.forEach((opt, idx) => {
       const btn = document.createElement('button');
       btn.className = 'option-btn';
-      // Highlight previously selected option
-      if (answers[currentQ] && answers[currentQ].selectedIdx === idx) {
+      // Only highlight if user previously answered THIS question
+      if (savedAnswer && savedAnswer.selectedIdx === idx) {
         btn.classList.add('selected');
       }
       btn.textContent = opt.t;
-      btn.onclick = () => selectOption(idx);
+      btn.addEventListener('click', () => selectOption(idx));
       optList.appendChild(btn);
     });
+    // Remove any lingering focus/active states
+    if (document.activeElement) document.activeElement.blur();
   }, 150);
 }
 
@@ -532,12 +535,16 @@ function selectOption(idx) {
   const q = QUESTIONS[currentQ];
   const opt = q.opts[idx];
 
-  // Visual feedback
-  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-  document.querySelectorAll('.option-btn')[idx].classList.add('selected');
+  // Visual feedback - scope to current options only
+  const currentBtns = document.getElementById('optionsList').querySelectorAll('.option-btn');
+  currentBtns.forEach(b => b.classList.remove('selected'));
+  if (currentBtns[idx]) currentBtns[idx].classList.add('selected');
 
   // Record answer (overwrite if already answered this question)
   answers[currentQ] = { qId: q.id, dim: q.dim, scores: opt.sc, selectedIdx: idx };
+
+  // Blur to prevent focus carry-over on mobile
+  if (document.activeElement) document.activeElement.blur();
 
   // Next question or finish
   setTimeout(() => {
