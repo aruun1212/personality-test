@@ -182,7 +182,9 @@ body {
 /* Share card (hidden template) */
 #shareCardTemplate {
   position: fixed; left: -9999px; top: 0; width: 375px;
+  box-sizing: border-box;
   background: var(--bg-primary); padding: 30px 24px; font-family: inherit;
+  overflow: visible;
 }
 /* Share card preview modal */
 .modal-overlay {
@@ -821,14 +823,30 @@ function generateShareCard() {
   // Generate image
   const template = document.getElementById('shareCardTemplate');
   template.style.left = '0';
+  template.style.top = '0';
+  template.style.zIndex = '-1';
 
-  html2canvas(template, { scale: 2, backgroundColor: '#0a0a0f', useCORS: true }).then(canvas => {
+  html2canvas(template, {
+    scale: 2,
+    backgroundColor: '#0a0a0f',
+    useCORS: true,
+    width: template.offsetWidth,
+    height: template.offsetHeight,
+    x: 0,
+    y: 0,
+    scrollX: 0,
+    scrollY: 0,
+    windowWidth: template.offsetWidth,
+    windowHeight: template.offsetHeight
+  }).then(canvas => {
     template.style.left = '-9999px';
+    template.style.zIndex = '';
     const img = document.getElementById('shareImage');
     img.src = canvas.toDataURL('image/png');
     document.getElementById('shareModal').classList.add('active');
   }).catch(err => {
     template.style.left = '-9999px';
+    template.style.zIndex = '';
     showToast('生成失败，请尝试复制文案分享');
   });
 }
