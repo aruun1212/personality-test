@@ -294,7 +294,7 @@ body {
     <div style="font-size:13px;color:#8888a0">🌑 我的暗面说</div>
     <div id="shareDarkOS" style="font-size:16px;font-weight:600;color:#ec4899;margin:10px 0;line-height:1.4"></div>
   </div>
-  <canvas id="shareRadarCanvas" width="250" height="250" style="display:block;margin:0 auto 16px"></canvas>
+          <canvas id="shareRadarCanvas" width="330" height="330" style="display:block;margin:0 auto 16px;width:330px;height:330px;"></canvas>
   <div id="shareDarkIndex" style="margin-bottom:20px"></div>
   <div id="shareQRCode" style="text-align:center;margin-bottom:12px"></div>
   <div style="text-align:center;color:#555570;font-size:12px">
@@ -822,7 +822,7 @@ function generateShareCard() {
   document.getElementById('shareDarkOS').textContent = `"${p.d}"`;
 
   // Draw mini radar on share canvas
-  drawRadar('shareRadarCanvas', resultData.bigFive, 250);
+          drawRadar('shareRadarCanvas', resultData.bigFive, 330);
 
   // Dark index summary
   const di = document.getElementById('shareDarkIndex');
