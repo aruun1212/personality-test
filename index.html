@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>留步，你有话说</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<style>
+/* ========== CSS Variables & Reset ========== */
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-card: #14141f;
+  --bg-card-hover: #1a1a2e;
+  --text-primary: #e8e8f0;
+  --text-secondary: #8888a0;
+  --text-dim: #555570;
+  --neon-purple: #a855f7;
+  --neon-blue: #6366f1;
+  --neon-pink: #ec4899;
+  --neon-cyan: #06b6d4;
+  --gradient-main: linear-gradient(135deg, #a855f7, #6366f1, #ec4899);
+  --gradient-dark: linear-gradient(135deg, #7c3aed, #4f46e5);
+  --shadow-neon: 0 0 20px rgba(168, 85, 247, 0.3);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.section { display: none; min-height: 100vh; padding: 20px; max-width: 420px; margin: 0 auto; }
+.section.active { display: flex; flex-direction: column; }
+
+/* ========== Landing Page ========== */
+#landing { justify-content: center; align-items: center; text-align: center; gap: 30px; }
+.landing-icon { font-size: 64px; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.landing-title {
+  font-size: 28px; font-weight: 800;
+  background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; line-height: 1.4;
+}
+.landing-subtitle { color: var(--text-secondary); font-size: 15px; line-height: 1.6; }
+.landing-meta { color: var(--text-dim); font-size: 13px; display: flex; gap: 16px; justify-content: center; }
+.btn-start {
+  background: var(--gradient-main); color: white; border: none; padding: 16px 48px;
+  border-radius: 50px; font-size: 18px; font-weight: 700; cursor: pointer;
+  box-shadow: var(--shadow-neon); transition: all 0.3s; letter-spacing: 2px;
+}
+.btn-start:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
+.btn-start:active { transform: scale(0.98); }
+
+/* ========== Quiz Page ========== */
+#quiz { justify-content: flex-start; padding-top: 40px; }
+.progress-bar-wrap { width: 100%; margin-bottom: 30px; }
+.progress-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); }
+.progress-track { width: 100%; height: 4px; background: #1e1e30; border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--gradient-main); border-radius: 2px; transition: width 0.4s ease; }
+.question-container { flex: 1; display: flex; flex-direction: column; }
+.question-scenario {
+  font-size: 20px; font-weight: 700; line-height: 1.5; margin-bottom: 24px;
+  min-height: 80px; opacity: 1; transition: opacity 0.3s;
+}
+.question-scenario.fade-out { opacity: 0; }
+.options-list { display: flex; flex-direction: column; gap: 12px; }
+.option-btn {
+  background: var(--bg-card); border: 1px solid #2a2a3e; border-radius: var(--radius-sm);
+  padding: 16px 20px; font-size: 15px; color: var(--text-primary); cursor: pointer;
+  text-align: left; line-height: 1.4; transition: all 0.2s; position: relative; overflow: hidden;
+}
+.option-btn:hover { background: var(--bg-card-hover); border-color: var(--neon-purple); }
+.option-btn:active { transform: scale(0.98); }
+.option-btn.selected {
+  border-color: var(--neon-purple); background: rgba(168, 85, 247, 0.15);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+}
+
+/* Navigation buttons (prev) */
+.quiz-nav { display: flex; justify-content: flex-start; margin-top: 20px; }
+.btn-prev {
+  background: none; border: 1px solid #2a2a3e; color: var(--text-secondary);
+  padding: 10px 20px; border-radius: 50px; font-size: 13px; cursor: pointer;
+  transition: all 0.2s; display: none;
+}
+.btn-prev.visible { display: inline-flex; align-items: center; gap: 6px; }
+.btn-prev:hover { border-color: var(--neon-purple); color: var(--text-primary); }
+
+/* ========== Loading Page ========== */
+#loading { justify-content: center; align-items: center; text-align: center; gap: 30px; }
+.loading-icon { font-size: 48px; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.95); } }
+.loading-text { font-size: 20px; font-weight: 600; }
+.loading-dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
+@keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+.loading-sub { color: var(--text-secondary); font-size: 14px; }
+
+/* ========== Result Page ========== */
+#result { justify-content: flex-start; padding-top: 30px; padding-bottom: 40px; gap: 24px; }
+.result-header { text-align: center; }
+.result-label { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+.result-surface-os {
+  font-size: 24px; font-weight: 800; line-height: 1.4;
+  background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; padding: 8px 0;
+}
+.result-surface-desc { color: var(--text-secondary); font-size: 14px; line-height: 1.8; margin-top: 12px; }
+.result-card {
+  background: var(--bg-card); border-radius: var(--radius); padding: 24px;
+  border: 1px solid #2a2a3e;
+}
+
+/* Dark OS reveal */
+.dark-os-wrap { position: relative; cursor: pointer; overflow: hidden; min-height: 120px; }
+.dark-os-content { transition: filter 0.6s, opacity 0.6s; }
+.dark-os-content.hidden { filter: blur(8px); opacity: 0.3; user-select: none; }
+.dark-os-overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  display: flex; justify-content: center; align-items: center;
+  background: rgba(10, 10, 15, 0.5); border-radius: var(--radius);
+  transition: opacity 0.6s; z-index: 2;
+}
+.dark-os-overlay.revealed { opacity: 0; pointer-events: none; }
+.dark-os-hint {
+  color: var(--neon-pink); font-size: 14px; font-weight: 600;
+  padding: 10px 20px; border: 1px solid var(--neon-pink); border-radius: 50px;
+  animation: pulse 2s ease-in-out infinite;
+}
+.result-dark-os {
+  font-size: 20px; font-weight: 700; color: var(--neon-pink); margin-bottom: 8px;
+}
+.result-dark-prefix { color: var(--text-dim); font-size: 13px; margin-bottom: 4px; font-style: italic; }
+.result-dark-desc { color: var(--text-secondary); font-size: 14px; line-height: 1.8; }
+.dark-type-badge {
+  display: inline-block; margin-top: 10px; padding: 4px 12px;
+  border-radius: 50px; font-size: 12px; color: var(--neon-pink);
+  border: 1px solid rgba(236, 72, 153, 0.3); background: rgba(236, 72, 153, 0.1);
+}
+
+/* Radar chart */
+.radar-wrap { display: flex; justify-content: center; padding: 10px 0; }
+#radarCanvas { max-width: 100%; }
+
+/* Dark index bars */
+.dark-index-section { display: flex; flex-direction: column; gap: 12px; }
+.dark-index-item { display: flex; flex-direction: column; gap: 4px; }
+.dark-index-label { display: flex; justify-content: space-between; font-size: 13px; }
+.dark-index-name { color: var(--text-secondary); }
+.dark-index-value { color: var(--text-primary); font-weight: 600; }
+.dark-index-track { height: 6px; background: #1e1e30; border-radius: 3px; overflow: hidden; }
+.dark-index-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+.dark-index-fill.narcissism { background: linear-gradient(90deg, #a855f7, #c084fc); }
+.dark-index-fill.machiavellianism { background: linear-gradient(90deg, #6366f1, #818cf8); }
+.dark-index-fill.chaos { background: linear-gradient(90deg, #ec4899, #f472b6); }
+.dark-index-fill.total { background: var(--gradient-main); }
+.dominant-badge {
+  font-size: 11px; color: var(--neon-pink); padding: 1px 8px;
+  border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 50px; margin-left: 6px;
+}
+
+/* Buttons */
+.btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+.btn-share {
+  background: var(--gradient-main); color: white; border: none; padding: 14px;
+  border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-share:hover { box-shadow: var(--shadow-neon); }
+.btn-secondary {
+  background: var(--bg-card); color: var(--text-primary); border: 1px solid #2a2a3e;
+  padding: 14px; border-radius: var(--radius-sm); font-size: 15px; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--neon-purple); }
+.btn-restart { background: none; color: var(--text-dim); border: none; font-size: 14px; cursor: pointer; padding: 10px; }
+.btn-restart:hover { color: var(--text-secondary); }
+
+/* Share card (hidden template) */
+#shareCardTemplate {
+  position: fixed; left: -9999px; top: 0; width: 375px;
+  background: var(--bg-primary); padding: 30px 24px; font-family: inherit;
+}
+/* Share card preview modal */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal-content { max-width: 375px; width: 100%; text-align: center; }
+.modal-content img { width: 100%; border-radius: var(--radius); margin-bottom: 16px; }
+.modal-hint { color: var(--text-secondary); font-size: 13px; margin-bottom: 12px; }
+.modal-close {
+  background: none; border: 1px solid #555; color: var(--text-secondary);
+  padding: 8px 24px; border-radius: 50px; cursor: pointer; font-size: 14px;
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--bg-card); color: var(--text-primary); padding: 12px 24px;
+  border-radius: 50px; font-size: 14px; border: 1px solid #2a2a3e;
+  opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ========== Landing Page ========== -->
+<div id="landing" class="section active">
+  <div class="landing-icon">🤓☝️</div>
+  <h1 class="landing-title">留步，你有话说</h1>
+  <p class="landing-subtitle">基于大五人格 × 暗黑三角的双面人格测试<br>找到你的表面OS和暗面OS</p>
+  <div class="landing-meta"><span>📝 36题</span><span>⏱️ 约5分钟</span></div>
+  <button class="btn-start" onclick="startQuiz()">开始灵魂扫描</button>
+  <div style="color: var(--text-dim); font-size: 12px; margin-top: 4px;">作者：<a href="https://github.com/aruun1212" target="_blank" style="color: var(--neon-purple); text-decoration: none;">GitHub@aruun1212</a></div>
+</div>
+
+<!-- ========== Quiz Page ========== -->
+<div id="quiz" class="section">
+  <div class="progress-bar-wrap">
+    <div class="progress-info">
+      <span id="progressText">1 / 36</span>
+      <span id="progressPercent">3%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:3%"></div></div>
+  </div>
+  <div class="question-container">
+    <div class="question-scenario" id="questionText"></div>
+    <div class="options-list" id="optionsList"></div>
+    <div class="quiz-nav">
+      <button class="btn-prev" id="btnPrev" onclick="prevQuestion()">← 上一题</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Loading Page ========== -->
+<div id="loading" class="section">
+  <div class="loading-icon">🧬</div>
+  <div class="loading-text">灵魂扫描中<span class="loading-dots"></span></div>
+  <div class="loading-sub">正在解码你的内心OS...</div>
+</div>
+
+<!-- ========== Result Page ========== -->
+<div id="result" class="section">
+  <div class="result-header">
+    <div class="result-label">☀️ 你的内心OS</div>
+    <div class="result-surface-os" id="surfaceOS"></div>
+  </div>
+  <div class="result-card">
+    <div class="result-surface-desc" id="surfaceDesc"></div>
+  </div>
+
+  <div class="result-card dark-os-wrap" id="darkOsWrap" onclick="revealDarkOS()">
+    <div class="dark-os-overlay" id="darkOverlay"><span class="dark-os-hint">🌑 点击揭示你的暗面</span></div>
+    <div class="dark-os-content hidden" id="darkContent">
+      <div class="result-dark-prefix" id="darkPrefix"></div>
+      <div class="result-dark-os" id="darkOS"></div>
+      <div class="result-dark-desc" id="darkDesc"></div>
+      <div class="dark-type-badge" id="darkTypeBadge"></div>
+    </div>
+  </div>
+
+  <div class="result-card">
+    <div class="result-label" style="margin-bottom:12px">📊 大五人格雷达</div>
+    <div class="radar-wrap"><canvas id="radarCanvas" width="300" height="300"></canvas></div>
+  </div>
+
+  <div class="result-card">
+    <div class="result-label" style="margin-bottom:16px">🔻 暗黑指数</div>
+    <div class="dark-index-section" id="darkIndexSection"></div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn-share" onclick="generateShareCard()">📸 生成分享卡片</button>
+    <button class="btn-secondary" onclick="copyShareText()">📋 复制结果文案</button>
+    <button class="btn-restart" onclick="restartQuiz()">🔄 重新测试</button>
+  </div>
+</div>
+
+<!-- Share Card Template (hidden, for html2canvas) -->
+<div id="shareCardTemplate">
+  <div style="text-align:center;margin-bottom:20px">
+    <div style="font-size:13px;color:#8888a0">☀️ 我的内心OS</div>
+    <div id="shareOS" style="font-size:22px;font-weight:800;color:#e8e8f0;margin:10px 0;line-height:1.4"></div>
+  </div>
+  <div style="text-align:center;margin-bottom:20px">
+    <div style="font-size:13px;color:#8888a0">🌑 我的暗面说</div>
+    <div id="shareDarkOS" style="font-size:16px;font-weight:600;color:#ec4899;margin:10px 0;line-height:1.4"></div>
+  </div>
+  <canvas id="shareRadarCanvas" width="250" height="250" style="display:block;margin:0 auto 16px"></canvas>
+  <div id="shareDarkIndex" style="margin-bottom:20px"></div>
+  <div id="shareQRCode" style="text-align:center;margin-bottom:12px"></div>
+  <div style="text-align:center;color:#555570;font-size:12px">
+    🤓☝️ 留步，你也有话说<br>扫码来测测吧
+  </div>
+</div>
+
+<!-- Modal for share card preview -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal-content">
+    <img id="shareImage" src="" alt="分享卡片">
+    <div class="modal-hint">长按图片保存到相册</div>
+    <button class="modal-close" onclick="closeShareModal()">关闭</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== DIMENSION META ====================
+const DIMS = {
+  O: { name: '开放性', highLabel: '🚀 脑洞', lowLabel: '🧱 务实' },
+  C: { name: '尽责性', highLabel: '📋 自律', lowLabel: '🎲 摆烂' },
+  E: { name: '外向性', highLabel: '📢 社牛', lowLabel: '🔇 i人' },
+  A: { name: '宜人性', highLabel: '🕊️ 好人', lowLabel: '🔥 嘴替' },
+  N: { name: '神经质', highLabel: '🌊 emo', lowLabel: '🗿 淡人' }
+};
+const DARK_NAMES = { narcissism: '🪞 自恋', machiavellianism: '🎭 厚黑', chaos: '🌀 混沌' };
+
+// ==================== 32 PERSONALITIES ====================
+const P = {
+"O+C+E+A+N+": { s: "我什么都能扛，但我快碎了", sd: "全能型选手，对谁都好还自律上进，创意满满又善解人意。但情绪暗地里已经千疮百孔，你总是把最好的留给别人，把崩溃留给深夜。", d: "碎就碎了，反正没有我你们什么都不是", dd: "你的付出不是无私，是一种高级的自我证明。没有你在场的世界，在你心里根本不值一提。", dt: "narcissism" },
+"O+C+E+A+N-": { s: "我也不知道为什么我什么都行", sd: "老天赏饭吃型，创意执行力情商情绪全拉满。你自己都觉得离谱——怎么什么事到你手里都能搞定，还顺便把周围人照顾了。", d: "我什么都行，所以你们都是NPC", dd: "全能是事实，但你内心深处觉得身边人不过是你人生剧本里的背景板。", dt: "narcissism" },
+"O+C+E+A-N+": { s: "你不行我来，但你是真不行", sd: "毒舌卷王，有创意有执行力还敢当面怼人。帮你是真帮，损你也是真损。自己其实也在焦虑，但嘴上绝不认输。", d: "我帮你是施舍，别当成理所当然", dd: "你的善意从来都带着评判。帮完之后最享受的不是对方的感谢，而是再次确认自己的优越感。", dt: "narcissism+machiavellianism" },
+"O+C+E+A-N-": { s: "听我的，不会错", sd: "有想法有执行力还不惯人，天生的掌控者。情绪稳定到可怕，决策果断到让人没话说。你不需要认同，因为你知道自己是对的。", d: "不听也行，出了事别来找我", dd: "你的冷静不是修养，是一种精密的控制欲。你放手不是因为尊重，是因为你已经预判了对方会跪着回来。", dt: "machiavellianism" },
+"O+C-E+A+N+": { s: "刚才还超开心，现在突然想哭", sd: "灿烂且脆弱，情绪无缝切换。上一秒还是全场最亮的星，下一秒就躲在角落偷偷红了眼眶。快乐是真的，崩溃也是真的。", d: "我哭是因为这个世界配不上我", dd: "你的眼泪不是脆弱，而是一种无声的控诉——这个粗糙的世界配不上你这么细腻的灵魂。", dt: "narcissism+chaos" },
+"O+C-E+A+N-": { s: "活着就是用来玩的啊", sd: "佛系快乐怪，不卷但脑洞大开。对人温柔还心态好，令人嫉妒的松弛感。你活成了所有人梦想中的样子——轻松、有趣、不累。", d: "你们认真的样子真好笑", dd: "你的快乐建立在一种隐秘的优越感上：看着别人拼命内卷，你觉得他们既可怜又好笑。", dt: "narcissism" },
+"O+C-E+A-N+": { s: "别惹我，我自己都不知道下一秒干嘛", sd: "不卷但暴躁，有创意但不落地。随时可能发疯，也随时可能破防。你是朋友圈里最不稳定的存在，但也是最真实的。", d: "我不是在失控，我是在享受毁灭", dd: "混乱不是你的弱点，是你的武器。你享受那种把一切推翻重来的快感，即使会伤到自己。", dt: "chaos" },
+"O+C-E+A-N-": { s: "这事绝了——算了我不干了", sd: "满脑子好点子但永远不执行，嘴上谁都不服，身体很诚实。你不是不行，你是觉得动手太掉价。", d: "不是我不行，是这个世界不配让我出手", dd: "你把摆烂包装成了一种姿态——不是懒，是世界不值得你认真对待。", dt: "narcissism" },
+"O+C+E-A+N+": { s: "我没事。（其实已经裂开了）", sd: "什么都往心里装，默默卷死所有人。表面平静内心海啸，你永远是那个说「没事」但其实最需要被关心的人。", d: "我替你们扛了所有，但没人会知道", dd: "你的隐忍不是善良，是一种沉默的记账。每一次「没事」都在心里记了一笔，总有一天会清算。", dt: "machiavellianism+narcissism" },
+"O+C+E-A+N-": { s: "我不需要你知道我有多强", sd: "低调实力派，不社交但全能。被严重低估但本人毫不在意——因为你根本不需要别人的认可。", d: "你们根本没资格评价我", dd: "你的低调不是谦虚，是懒得跟你们解释。在你心里，评价你的人首先得够格。", dt: "narcissism" },
+"O+C+E-A-N+": { s: "别靠近我，我会伤到你也会伤到自己", sd: "独来独往的高能刺猬，浑身是才华也浑身是刺。你知道自己很厉害，也知道自己很危险。", d: "我伤你是因为你不该靠这么近", dd: "你把伤害合理化为一种保护机制。不是你有问题，是别人不该越界。", dt: "chaos" },
+"O+C+E-A-N-": { s: "别废话，看结果", sd: "冷血效率怪，独处加自律加硬核加零情绪波动。你可能不是人类——至少周围人是这么怀疑的。", d: "你的存在就是在浪费我的时间", dd: "你对效率的追求已经异化为一种对他人的蔑视。慢的人不只是慢，在你眼里是没有存在价值的。", dt: "narcissism+machiavellianism" },
+"O+C-E-A+N+": { s: "你不懂我，算了你也不需要懂", sd: "敏感、小众、在自己的世界里美丽地碎着。你不期待被理解，因为你觉得真正懂你的人还没出现。", d: "你没有资格懂我", dd: "你把孤独美化成了一种特权。不是没人懂你，是你拒绝被懂——因为被理解意味着变得普通。", dt: "narcissism" },
+"O+C-E-A+N-": { s: "人间？跟我有什么关系", sd: "精神世界住满了神，不食人间烟火的佛系天才。你活在自己的频率上，偶尔下凡看看人间，觉得还行但不想久留。", d: "你们在泥里打滚，我在云端看着", dd: "你的超脱不是无欲无求，是一种精心维护的优越感。俯视众生的感觉，比任何世俗成就都让你满足。", dt: "narcissism" },
+"O+C-E-A-N+": { s: "写了一万字又全删了", sd: "互联网最深的角落，毒舌emo独居怪物。表达欲爆棚但永远按了删除键——不是不想说，是怕说了也没人在意。", d: "总有一天你们会后悔没读到那一万字", dd: "你删掉的不只是文字，是一种赌气式的报复。你想证明他们错过了什么，即使他们永远不会知道。", dt: "narcissism+chaos" },
+"O+C-E-A-N-": { s: "你找不到我的", sd: "已读不回大师，消失是常态。来去无痕的数字幽灵，你不是在逃避，你只是觉得在场太累了。", d: "消失就是我对你们最后的仁慈", dd: "你的消失不是无所谓，是一种精心策划的惩罚。让别人找不到你，是你能想到的最优雅的报复。", dt: "machiavellianism+chaos" },
+"O-C+E+A+N+": { s: "你又没吃早饭？你又熬夜了？", sd: "操心命本命，管天管地管你死活。务实靠谱的社牛甜心，就是自己偶尔会偷偷焦虑——因为操心是会上瘾的。", d: "没有我管着你们，你们早就完了", dd: "你的关心是真的，但关心背后的控制欲也是真的。你需要被需要，因为这是你存在感的来源。", dt: "machiavellianism+narcissism" },
+"O-C+E+A+N-": { s: "放心，有我在", sd: "人形安全感，稳定输出型靠谱人。踏实自律外向温柔情绪还稳定——你是所有人都想要的那个朋友和同事。", d: "你们离了我连呼吸都不会", dd: "你的可靠已经变成了一种上瘾式的自我陶醉。没有你兜底的场景，你简直不敢想象。", dt: "narcissism" },
+"O-C+E+A-N+": { s: "你说的不对！……但我说的对吗", sd: "怼天怼地但怼完又内耗。战斗力拉满安全感为零，你永远在「确信自己是对的」和「万一我错了呢」之间反复横跳。", d: "你说的不对，我说的才对，别废话", dd: "你的犹豫只存在于暗面。真实的你从不怀疑自己，只是表演犹豫让别人觉得你「还挺谦虚」。", dt: "narcissism" },
+"O-C+E+A-N-": { s: "这个世界就是我的舞台", sd: "大男主大女主剧本，有执行力有气场。脚踏实地加稳定输出加绝不拉垮——你活得像小说主角，而且你知道。", d: "你们都是我故事里的配角", dd: "主角光环是你最珍贵的幻觉。在你的叙事里，所有人的存在都是为了衬托你的精彩。", dt: "narcissism" },
+"O-C-E+A+N+": { s: "哈哈哈哈……你们走了吗？我好累", sd: "人前快乐制造机，人后情绪废墟。用笑容缝合所有裂缝，直到夜深人静才敢把面具摘下来。", d: "我的笑是给你们的施舍，别不识好歹", dd: "你的快乐是一种投资——用笑容换取存在感和不可替代性。一旦有人不领情，你会比谁都冷。", dt: "machiavellianism" },
+"O-C-E+A+N-": { s: "有什么好难过的！走，吃好的去", sd: "没心没肺快乐鬼，务实且温暖。天塌下来先吃饭，世界末日也要约人去好吃的馆子。你是朋友里永远的正能量。", d: "你们脆弱的样子真让我没耐心", dd: "你的乐观背后藏着一丝对脆弱者的不屑。你不是不懂悲伤，你只是觉得悲伤的人太弱了。", dt: "narcissism+chaos" },
+"O-C-E+A-N+": { s: "握草！又来！我要炸了！", sd: "一点就着的暴躁体质，不装不忍不惯着。你是朋友圈里最容易爆炸的人，但炸完之后又会偷偷后悔。", d: "我不是在生气，我是在清场", dd: "你的愤怒不是失控，是一种权力展示。让所有人闭嘴和退让，才是你发火的真正目的。", dt: "chaos" },
+"O-C-E+A-N-": { s: "差不多得了，下班下班", sd: "带头摸鱼的职场清醒人，不卷不装活得最明白。你是那个永远第一个关电脑走人的人，还顺便帮大家松绑。", d: "你们卷是因为没有我这个脑子", dd: "你的摆烂是有底气的——因为你觉得自己比卷王聪明，只是懒得证明而已。", dt: "narcissism+machiavellianism" },
+"O-C+E-A+N+": { s: "没事……我还能撑", sd: "默默扛一切的隐形战士，不会拒绝不会抱怨。快断了也不吭声，因为你觉得叫苦是一种软弱。", d: "你们欠我的，早晚要还", dd: "你的沉默不是坚强，是一种隐忍式的记仇。你在心里给每个人建了一本账，精确到小数点。", dt: "machiavellianism" },
+"O-C+E-A+N-": { s: "我做好我的就行了", sd: "沉默版靠谱之神，不社交不废话。交给他的事闭眼放心，但别试图了解他——因为他不想被了解。", d: "我不说话不代表我不知道你几斤几两", dd: "你的沉默是一种看穿一切之后的冷淡。你早就知道每个人的深浅，只是觉得说出来太掉价。", dt: "machiavellianism" },
+"O-C+E-A-N+": { s: "我没生气。（已经杀了你三次）", sd: "表面冰山内心火山。不说话不代表没想法，惹到了你不会有好果子吃——只是你永远不知道什么时候惹到了。", d: "第四次，就不只是在心里了", dd: "你的隐忍有一个临界点，而你一直在默默记录距离那个点还有多远。越过之后会发生什么，连你自己都期待。", dt: "chaos" },
+"O-C+E-A-N-": { s: "情绪是什么？能提升效率吗", sd: "人形处理器，没有感情只有产出。效率恐怖到让人怀疑你是不是AI——你自己偶尔也会这么想。", d: "你有情绪是因为你太弱了", dd: "你不是没有情绪，是把情绪当成了一种低等的认知方式。有情绪的人在你眼里就是进化不完全。", dt: "narcissism" },
+"O-C-E-A+N+": { s: "对不起……是不是我又做错了", sd: "善良到卑微，世界的受气包。一碰就碎的玻璃心，你永远在反省是不是自己的错——即使错的是别人。", d: "道歉是我给你的台阶，你最好接着", dd: "你的卑微是一种高明的情感勒索。用自我贬低让对方内疚，是你不自觉掌握的最强武器。", dt: "machiavellianism" },
+"O-C-E-A+N-": { s: "躺着不好吗？为什么要起来", sd: "终极咸鱼体，快乐摆烂且温柔。活成了所有打工人的梦想——不焦虑不内耗不争不抢，就这么安静地快乐着。", d: "你们累死累活，最后还不是和我一样", dd: "你的佛系是一种温柔的嘲讽。看着别人拼命奔跑最后到达的终点，跟你的起点一模一样。", dt: "narcissism+chaos" },
+"O-C-E-A-N+": { s: "别跟我说话，我已经死了", sd: "精神状态已阵亡，暴躁空壳人。活着但灵魂早就不在了，偶尔诈尸发条朋友圈证明自己还有网络信号。", d: "我死了，但我临死前会拉几个垫背的", dd: "你的丧不是放弃，是一种带攻击性的消极。如果我要沉，我不介意拖几个人一起下水。", dt: "chaos" },
+"O-C-E-A-N-": { s: "……嗯。都行。随便。", sd: "终极淡人，对一切都无所谓。佛到已经没有自我，你是传说中那个「无所谓」本人——但说不定，这才是最高境界。", d: "你以为我无所谓？我是懒得跟你计较", dd: "你的淡漠不是真的什么都不在乎，是在乎过之后觉得太累了。每一次「随便」背后都是一句咽回去的话。", dt: "machiavellianism+narcissism" }
+};
+
+// ==================== 36 QUESTIONS (25 Big Five + 11 Dark Triad, interleaved) ====================
+const QUESTIONS = [
+// --- E1 ---
+{id:1, dim:'E', q:'周五终于有空了，你的第一反应是？', opts:[
+  {t:'发群里喊人出去浪',sc:{E:2}},{t:'终于可以不用说话了，谢天谢地',sc:{E:0}},{t:'看看有没有什么新展/活动可以去',sc:{E:1,O:1}},{t:'点外卖开始追剧，谁也别找我',sc:{E:0}}]},
+// --- O1 ---
+{id:2, dim:'O', q:'刷到一个你完全没听过的新概念，你会？', opts:[
+  {t:'立刻开3个标签页深入研究',sc:{O:2}},{t:'觉得挺有意思但划走了',sc:{O:1}},{t:'跟我有什么关系',sc:{O:0}},{t:'收藏=学会，先收了再说',sc:{O:1}}]},
+// --- Dark: narcissism 1 ---
+{id:3, dim:'narcissism', q:'你做了一个你觉得很牛的东西，但没人注意到。你的反应是？', opts:[
+  {t:'无所谓，我自己知道就行',sc:{narcissism:0}},{t:'主动分享，好东西就该被看到',sc:{narcissism:1}},{t:'默默生气——你们不识货',sc:{narcissism:2}},{t:'算了，可能也没那么好',sc:{narcissism:0}}]},
+// --- C1 ---
+{id:4, dim:'C', q:'明天有个重要deadline，你现在的状态是？', opts:[
+  {t:'早就做完了，正在检查第三遍',sc:{C:2}},{t:'差不多了，最后润色一下',sc:{C:1}},{t:'还没开始，但我有信心通宵搞定',sc:{C:0}},{t:'deadline是第一生产力，我还在刷手机',sc:{C:0}}]},
+// --- A1 ---
+{id:5, dim:'A', q:'朋友跟你吐槽ta的烂事，你会？', opts:[
+  {t:'认真倾听+安慰，ta需要一个出口',sc:{A:2}},{t:'帮ta分析问题出在哪',sc:{A:1}},{t:'直接说"你也有问题吧"',sc:{A:0}},{t:'表面附和，心里想"又来了"',sc:{A:0}}]},
+// --- N1 ---
+{id:6, dim:'N', q:'发了条消息对方一直没回，你的内心活动是？', opts:[
+  {t:'在忙吧，等等就好',sc:{N:0}},{t:'开始反复检查自己说的话有没有问题',sc:{N:2}},{t:'有点不安但强迫自己不去想',sc:{N:1}},{t:'无所谓，爱回不回',sc:{N:0}}]},
+// --- Dark: machiavellianism 1 ---
+{id:7, dim:'machiavellianism', q:'你发现同事犯了个错，但ta不知道你知道。你会？', opts:[
+  {t:'直接告诉ta',sc:{machiavellianism:0}},{t:'先存着，以后说不定用得上',sc:{machiavellianism:2}},{t:'看看能不能帮ta悄悄改了',sc:{machiavellianism:0}},{t:'不关我事',sc:{machiavellianism:1}}]},
+// --- E2 ---
+{id:8, dim:'E', q:'团建被拉去KTV，你的状态是？', opts:[
+  {t:'直接抢麦，承包全场',sc:{E:2}},{t:'在角落负责切歌和倒酒',sc:{E:1}},{t:'找了个理由提前溜了',sc:{E:0}},{t:'去了但全程玩手机',sc:{E:0}}]},
+// --- O2 ---
+{id:9, dim:'O', q:'有人约你去一个你从没去过的城市旅行，你会？', opts:[
+  {t:'太好了！正想去没去过的地方',sc:{O:2}},{t:'先查查攻略再决定',sc:{O:1}},{t:'不太想去陌生的地方',sc:{O:0}},{t:'要看跟谁去',sc:{O:1}}]},
+// --- C2 ---
+{id:10, dim:'C', q:'你的房间/桌面现在是什么状态？', opts:[
+  {t:'整整齐齐，每样东西都有固定位置',sc:{C:2}},{t:'大体还行，偶尔乱一下',sc:{C:1}},{t:'有点乱但我知道东西在哪',sc:{C:0}},{t:'一片废墟，别问',sc:{C:0}}]},
+// --- Dark: chaos 1 ---
+{id:11, dim:'chaos', q:'排了很久的队被人插队，你会？', opts:[
+  {t:'算了，不想因为这种事影响心情',sc:{chaos:0}},{t:'直接大声说出来',sc:{chaos:1}},{t:'默默生闷气',sc:{chaos:0}},{t:'直接把ta挤出去，规则就是规则',sc:{chaos:2}}]},
+// --- A2 ---
+{id:12, dim:'A', q:'小组讨论中有人说了一个你觉得很蠢的观点，你会？', opts:[
+  {t:'委婉地引导ta换个角度想',sc:{A:2}},{t:'直接指出这个想法的问题',sc:{A:0}},{t:'不说话，心里默默摇头',sc:{A:1}},{t:'当场反驳然后给出更好的方案',sc:{A:0}}]},
+// --- N2 ---
+{id:13, dim:'N', q:'考完试/面试完/提交完方案后，你通常？', opts:[
+  {t:'反复回忆哪里可能出了问题',sc:{N:2}},{t:'有点紧张但能控制',sc:{N:1}},{t:'交了就忘了，结果改变不了',sc:{N:0}},{t:'该吃吃该喝喝，没啥好想的',sc:{N:0}}]},
+// --- Dark: narcissism 2 ---
+{id:14, dim:'narcissism', q:'朋友晒了一个你也有/也做过的成就，你的第一反应是？', opts:[
+  {t:'真心为ta高兴',sc:{narcissism:0}},{t:'也为ta高兴，但忍不住想"我也行啊"',sc:{narcissism:1}},{t:'觉得ta在炫耀',sc:{narcissism:2}},{t:'无感，滑走了',sc:{narcissism:0}}]},
+// --- E3 ---
+{id:15, dim:'E', q:'一个人逛街/看电影，你的感受是？', opts:[
+  {t:'超自在，享受独处时光',sc:{E:0}},{t:'还行，但更喜欢有人一起',sc:{E:1}},{t:'有点无聊，总想找人说话',sc:{E:2}},{t:'直接不会一个人去',sc:{E:2}}]},
+// --- O3 ---
+{id:16, dim:'O', q:'菜单上有一道你完全没听过的菜，你会？', opts:[
+  {t:'点！就爱试新东西',sc:{O:2}},{t:'先搜一下什么味道再决定',sc:{O:1}},{t:'还是点自己常吃的吧',sc:{O:0}},{t:'问朋友推荐',sc:{O:1}}]},
+// --- Dark: machiavellianism 2 ---
+{id:17, dim:'machiavellianism', q:'你和一个不太熟的人要合作完成一件事，你会？', opts:[
+  {t:'坦诚相待，有话直说',sc:{machiavellianism:0}},{t:'先观察对方的弱点和习惯',sc:{machiavellianism:2}},{t:'保持友好但不暴露太多',sc:{machiavellianism:1}},{t:'让ta多做，我来监督',sc:{machiavellianism:1}}]},
+// --- C3 ---
+{id:18, dim:'C', q:'制定了一个健身/读书/早起计划，通常能坚持多久？', opts:[
+  {t:'一直在坚持，已经是习惯了',sc:{C:2}},{t:'能坚持一段时间但会中断',sc:{C:1}},{t:'三天打鱼两天晒网',sc:{C:0}},{t:'计划？制定的那一刻就是巅峰',sc:{C:0}}]},
+// --- A3 ---
+{id:19, dim:'A', q:'有人请你帮忙，但你真的很忙/不想帮，你会？', opts:[
+  {t:'还是会帮，不好意思拒绝',sc:{A:2}},{t:'坦诚说自己忙，建议找别人',sc:{A:1}},{t:'直接说"不行"',sc:{A:0}},{t:'答应但拖着不做',sc:{A:0}}]},
+// --- Dark: chaos 2 ---
+{id:20, dim:'chaos', q:'玩游戏时，你更喜欢？', opts:[
+  {t:'按规则来，公平竞争',sc:{chaos:0}},{t:'找漏洞和bug，规则是用来打破的',sc:{chaos:2}},{t:'赢了就行，过程不重要',sc:{chaos:1}},{t:'享受过程，输赢无所谓',sc:{chaos:0}}]},
+// --- N3 ---
+{id:21, dim:'N', q:'凌晨3点还睡不着，你通常在？', opts:[
+  {t:'无限循环白天的社死瞬间',sc:{N:2}},{t:'想一些有的没的但能自我调节',sc:{N:1}},{t:'看视频/刷手机直到困',sc:{N:0}},{t:'倒头就睡，失眠是什么',sc:{N:0}}]},
+// --- E4 ---
+{id:22, dim:'E', q:'到了一个全是陌生人的聚会，你会？', opts:[
+  {t:'主动出击，跟每个人打招呼',sc:{E:2}},{t:'找一个看起来好说话的人聊',sc:{E:1}},{t:'找个角落呆着玩手机',sc:{E:0}},{t:'找到认识的人就好了，找不到就走',sc:{E:0}}]},
+// --- Dark: narcissism 3 ---
+{id:23, dim:'narcissism', q:'有人当面夸你"你好厉害"，你心里想的是？', opts:[
+  {t:'有点不好意思，客气了客气了',sc:{narcissism:0}},{t:'嘴上说哪里哪里，心里觉得确实',sc:{narcissism:1}},{t:'终于有人看到了',sc:{narcissism:2}},{t:'怀疑ta是不是有什么目的',sc:{narcissism:0}}]},
+// --- C4 ---
+{id:24, dim:'C', q:'手机上的消息通知，你通常？', opts:[
+  {t:'秒回，不让别人等',sc:{C:2}},{t:'看到了会尽快回',sc:{C:1}},{t:'看心情，不急的就先放着',sc:{C:0}},{t:'99+未读是常态',sc:{C:0}}]},
+// --- Dark: machiavellianism 3 ---
+{id:25, dim:'machiavellianism', q:'两个朋友闹矛盾都来找你倾诉，你会？', opts:[
+  {t:'尽量公正地帮他们调解',sc:{machiavellianism:0}},{t:'两边都安慰，但不站队',sc:{machiavellianism:1}},{t:'了解双方立场后选择对我更有利的那边',sc:{machiavellianism:2}},{t:'不想掺和，让他们自己解决',sc:{machiavellianism:0}}]},
+// --- A4 ---
+{id:26, dim:'A', q:'你和朋友意见不同，你更倾向于？', opts:[
+  {t:'顺着对方说，维持和谐',sc:{A:2}},{t:'表达自己的看法但尊重分歧',sc:{A:1}},{t:'据理力争，对就是对',sc:{A:0}},{t:'懒得争，但心里坚持自己的',sc:{A:0}}]},
+// --- O4 ---
+{id:27, dim:'O', q:'有人分享了一种你觉得很奇怪的生活方式/观念，你会？', opts:[
+  {t:'好奇，想了解更多',sc:{O:2}},{t:'虽然不认同但尊重',sc:{O:1}},{t:'觉得很离谱，不理解',sc:{O:0}},{t:'直接划走，跟我无关',sc:{O:0}}]},
+// --- N4 ---
+{id:28, dim:'N', q:'被领导/老师当众批评了，你之后会？', opts:[
+  {t:'反复回想，越想越难受',sc:{N:2}},{t:'难受一会儿但能调整过来',sc:{N:1}},{t:'分析批评是否合理，合理就改',sc:{N:0}},{t:'无所谓，该干嘛干嘛',sc:{N:0}}]},
+// --- Dark: narcissism 4 ---
+{id:29, dim:'narcissism', q:'如果有一面只有你能看到的"真话镜"，你觉得它会对你说什么？', opts:[
+  {t:'"你其实没有自己以为的那么好"',sc:{narcissism:0}},{t:'"你比大多数人想象的要强"',sc:{narcissism:2}},{t:'"你还可以"',sc:{narcissism:1}},{t:'"你跟别人差不多"',sc:{narcissism:0}}]},
+// --- Dark: machiavellianism 4 ---
+{id:30, dim:'machiavellianism', q:'你知道一个很有用的信息/资源，你会？', opts:[
+  {t:'直接分享给大家',sc:{machiavellianism:0}},{t:'先自己用够了再分享',sc:{machiavellianism:1}},{t:'只分享给对我有用的人',sc:{machiavellianism:2}},{t:'随缘，有人问就说',sc:{machiavellianism:0}}]},
+// --- E5 ---
+{id:31, dim:'E', q:'连续社交了一整天后，你的感受是？', opts:[
+  {t:'超开心，还意犹未尽',sc:{E:2}},{t:'挺累的但也挺充实',sc:{E:1}},{t:'电量耗尽，需要一个人充电',sc:{E:0}},{t:'已经社恐发作了',sc:{E:0}}]},
+// --- C5 ---
+{id:32, dim:'C', q:'你对"先苦后甜"和"及时行乐"的态度是？', opts:[
+  {t:'先苦后甜，延迟满足是基本修养',sc:{C:2}},{t:'大部分时候先苦后甜，偶尔放纵',sc:{C:1}},{t:'及时行乐，谁知道明天什么样',sc:{C:0}},{t:'看心情，没有固定原则',sc:{C:0}}]},
+// --- Dark: chaos 3 ---
+{id:33, dim:'chaos', q:'如果可以不被发现，你会闯一个你觉得不合理的红灯吗？', opts:[
+  {t:'不会，规则就是规则',sc:{chaos:0}},{t:'看情况，如果确实没车的话...',sc:{chaos:1}},{t:'会，不合理的规则不值得遵守',sc:{chaos:2}},{t:'看有没有摄像头',sc:{chaos:1}}]},
+// --- A5 ---
+{id:34, dim:'A', q:'看到网上一个你觉得很离谱的评论，你会？', opts:[
+  {t:'就算不同意也不想吵架',sc:{A:2}},{t:'打一段反驳然后删掉了',sc:{A:1}},{t:'直接回复怼ta',sc:{A:0}},{t:'截图发群里吐槽',sc:{A:0}}]},
+// --- O5 ---
+{id:35, dim:'O', q:'最近一次让你觉得"世界好大"的体验是？', opts:[
+  {t:'看了一部颠覆认知的纪录片/书',sc:{O:2}},{t:'跟一个很不一样的人聊了天',sc:{O:2}},{t:'想不起来，日子都差不多',sc:{O:0}},{t:'刷到一条很震撼的新闻',sc:{O:1}}]},
+// --- N5 ---
+{id:36, dim:'N', q:'总的来说，你觉得自己的情绪状态是？', opts:[
+  {t:'过山车——高的时候很高，低的时候很低',sc:{N:2}},{t:'大部分时候平稳，偶尔波动',sc:{N:1}},{t:'一直挺稳定的',sc:{N:0}},{t:'像死水一样平静（褒义）',sc:{N:0}}]}
+];
+
+// ==================== STATE ====================
+let currentQ = 0;
+let answers = []; // [{qId, scores}]
+let resultData = null; // computed result
+
+// ==================== PAGE NAVIGATION ====================
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ==================== QUIZ LOGIC ====================
+function startQuiz() {
+  currentQ = 0;
+  answers = [];
+  resultData = null;
+  showSection('quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const total = QUESTIONS.length;
+  const pct = Math.round(((currentQ + 1) / total) * 100);
+  document.getElementById('progressText').textContent = `${currentQ + 1} / ${total}`;
+  document.getElementById('progressPercent').textContent = `${pct}%`;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+
+  const qText = document.getElementById('questionText');
+  const optList = document.getElementById('optionsList');
+
+  // Show/hide prev button
+  const btnPrev = document.getElementById('btnPrev');
+  if (currentQ > 0) btnPrev.classList.add('visible');
+  else btnPrev.classList.remove('visible');
+
+  qText.classList.add('fade-out');
+  setTimeout(() => {
+    qText.textContent = q.q;
+    qText.classList.remove('fade-out');
+    optList.innerHTML = '';
+    q.opts.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      // Highlight previously selected option
+      if (answers[currentQ] && answers[currentQ].selectedIdx === idx) {
+        btn.classList.add('selected');
+      }
+      btn.textContent = opt.t;
+      btn.onclick = () => selectOption(idx);
+      optList.appendChild(btn);
+    });
+  }, 150);
+}
+
+function selectOption(idx) {
+  const q = QUESTIONS[currentQ];
+  const opt = q.opts[idx];
+
+  // Visual feedback
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.option-btn')[idx].classList.add('selected');
+
+  // Record answer (overwrite if already answered this question)
+  answers[currentQ] = { qId: q.id, dim: q.dim, scores: opt.sc, selectedIdx: idx };
+
+  // Next question or finish
+  setTimeout(() => {
+    currentQ++;
+    if (currentQ < QUESTIONS.length) {
+      renderQuestion();
+    } else {
+      finishQuiz();
+    }
+  }, 300);
+}
+
+function prevQuestion() {
+  if (currentQ > 0) {
+    currentQ--;
+    renderQuestion();
+  }
+}
+
+function finishQuiz() {
+  showSection('loading');
+  setTimeout(() => {
+    computeResult();
+    renderResult();
+    showSection('result');
+  }, 2500);
+}
+
+// ==================== SCORING ENGINE ====================
+function computeResult() {
+  // Big Five scores
+  const bigFive = { O: 0, C: 0, E: 0, A: 0, N: 0 };
+  const bigFiveLastOpt = { O: 0, C: 0, E: 0, A: 0, N: 0 }; // for tie-breaking
+  const darkTriad = { narcissism: 0, machiavellianism: 0, chaos: 0 };
+  const darkMax = { narcissism: 8, machiavellianism: 8, chaos: 6 };
+
+  answers.filter(Boolean).forEach(a => {
+    for (const [dim, score] of Object.entries(a.scores)) {
+      if (dim in bigFive) {
+        bigFive[dim] += score;
+        bigFiveLastOpt[dim] = score; // last question's score for tie-breaking
+      }
+      if (dim in darkTriad) {
+        darkTriad[dim] += score;
+      }
+    }
+  });
+
+  // Binary split
+  const signs = {};
+  for (const dim of ['O','C','E','A','N']) {
+    if (bigFive[dim] >= 6) signs[dim] = '+';
+    else if (bigFive[dim] <= 4) signs[dim] = '-';
+    else signs[dim] = bigFiveLastOpt[dim] >= 1 ? '+' : '-'; // tie-break
+  }
+
+  // Personality code
+  const code = ['O','C','E','A','N'].map(d => d + signs[d]).join('');
+  const personality = P[code];
+
+  // Dark Triad percentages
+  const darkPct = {};
+  let darkTotal = 0, darkTotalMax = 0;
+  for (const [k, v] of Object.entries(darkTriad)) {
+    darkPct[k] = Math.round((v / darkMax[k]) * 100);
+    darkTotal += v;
+    darkTotalMax += darkMax[k];
+  }
+  const darkTotalPct = Math.round((darkTotal / darkTotalMax) * 100);
+
+  // Dominant dark side
+  let dominant = 'narcissism';
+  if (darkPct.machiavellianism > darkPct[dominant]) dominant = 'machiavellianism';
+  if (darkPct.chaos > darkPct[dominant]) dominant = 'chaos';
+
+  resultData = {
+    code, personality, bigFive, signs, darkPct, darkTotalPct, dominant
+  };
+}
+
+// ==================== RESULT RENDERING ====================
+function renderResult() {
+  const r = resultData;
+  const p = r.personality;
+
+  // Surface OS
+  document.getElementById('surfaceOS').textContent = `"${p.s}"`;
+  document.getElementById('surfaceDesc').textContent = p.sd;
+
+  // Dark OS (hidden initially)
+  const prefix = r.darkTotalPct >= 60 ? '' : r.darkTotalPct >= 40 ? '偶尔你也会想……' : '在深夜某个瞬间，你可能闪过……';
+  document.getElementById('darkPrefix').textContent = prefix;
+  document.getElementById('darkOS').textContent = `"${p.d}"`;
+  document.getElementById('darkDesc').textContent = p.dd;
+
+  const dtLabels = p.dt.split('+').map(k => DARK_NAMES[k] || k).join(' × ');
+  document.getElementById('darkTypeBadge').textContent = `主导暗面：${dtLabels}`;
+
+  // Reset dark reveal state
+  document.getElementById('darkContent').classList.add('hidden');
+  document.getElementById('darkOverlay').classList.remove('revealed');
+
+  // Radar chart
+  drawRadar('radarCanvas', r.bigFive, 300);
+
+  // Dark index bars
+  renderDarkIndex(r);
+}
+
+function revealDarkOS() {
+  document.getElementById('darkOverlay').classList.add('revealed');
+  document.getElementById('darkContent').classList.remove('hidden');
+}
+
+// ==================== RADAR CHART ====================
+function drawRadar(canvasId, scores, size) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const cx = size / 2, cy = size / 2;
+  const maxR = size * 0.35;
+  const dims = ['O', 'C', 'E', 'A', 'N'];
+  const n = dims.length;
+
+  ctx.clearRect(0, 0, size, size);
+
+  // Angles (start from top, clockwise)
+  const angles = dims.map((_, i) => (Math.PI * 2 * i / n) - Math.PI / 2);
+
+  // Grid lines
+  for (let level = 1; level <= 5; level++) {
+    const r = (level / 5) * maxR;
+    ctx.beginPath();
+    angles.forEach((a, i) => {
+      const x = cx + r * Math.cos(a);
+      const y = cy + r * Math.sin(a);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(100, 100, 160, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Axis lines
+  angles.forEach(a => {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + maxR * Math.cos(a), cy + maxR * Math.sin(a));
+    ctx.strokeStyle = 'rgba(100, 100, 160, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Data polygon
+  ctx.beginPath();
+  dims.forEach((dim, i) => {
+    const val = scores[dim] / 10;
+    const r = val * maxR;
+    const x = cx + r * Math.cos(angles[i]);
+    const y = cy + r * Math.sin(angles[i]);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(cx - maxR, cy - maxR, cx + maxR, cy + maxR);
+  grad.addColorStop(0, 'rgba(168, 85, 247, 0.3)');
+  grad.addColorStop(0.5, 'rgba(99, 102, 241, 0.3)');
+  grad.addColorStop(1, 'rgba(236, 72, 153, 0.3)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Outline
+  ctx.strokeStyle = 'rgba(168, 85, 247, 0.8)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Data points
+  dims.forEach((dim, i) => {
+    const val = scores[dim] / 10;
+    const r = val * maxR;
+    const x = cx + r * Math.cos(angles[i]);
+    const y = cy + r * Math.sin(angles[i]);
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#a855f7';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  // Labels
+  ctx.font = '13px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  dims.forEach((dim, i) => {
+    const labelR = maxR + 28;
+    const x = cx + labelR * Math.cos(angles[i]);
+    const y = cy + labelR * Math.sin(angles[i]);
+    const info = DIMS[dim];
+    const label = scores[dim] >= 6 ? info.highLabel : info.lowLabel;
+    ctx.fillStyle = '#8888a0';
+    ctx.fillText(label, x, y - 8);
+    ctx.fillStyle = '#555570';
+    ctx.font = '11px -apple-system, sans-serif';
+    ctx.fillText(`${scores[dim]}/10`, x, y + 8);
+    ctx.font = '13px -apple-system, sans-serif';
+  });
+}
+
+// ==================== DARK INDEX BARS ====================
+function renderDarkIndex(r) {
+  const container = document.getElementById('darkIndexSection');
+  container.innerHTML = '';
+
+  // Total
+  container.innerHTML += createDarkBar('暗黑总分', r.darkTotalPct, 'total', false);
+  // Each dimension
+  for (const [key, pct] of Object.entries(r.darkPct)) {
+    const isDominant = key === r.dominant;
+    container.innerHTML += createDarkBar(DARK_NAMES[key], pct, key, isDominant);
+  }
+
+  // Animate bars
+  setTimeout(() => {
+    container.querySelectorAll('.dark-index-fill').forEach(el => {
+      el.style.width = el.dataset.width;
+    });
+  }, 100);
+}
+
+function createDarkBar(name, pct, cssClass, isDominant) {
+  const badge = isDominant ? `<span class="dominant-badge">主导暗面</span>` : '';
+  return `<div class="dark-index-item">
+    <div class="dark-index-label">
+      <span class="dark-index-name">${name}${badge}</span>
+      <span class="dark-index-value">${pct}%</span>
+    </div>
+    <div class="dark-index-track">
+      <div class="dark-index-fill ${cssClass}" style="width:0" data-width="${pct}%"></div>
+    </div>
+  </div>`;
+}
+
+// ==================== SHARE FUNCTIONS ====================
+function generateShareCard() {
+  if (!resultData) return;
+  const p = resultData.personality;
+
+  // Populate share card template
+  document.getElementById('shareOS').textContent = `"${p.s}"`;
+  document.getElementById('shareDarkOS').textContent = `"${p.d}"`;
+
+  // Draw mini radar on share canvas
+  drawRadar('shareRadarCanvas', resultData.bigFive, 250);
+
+  // Dark index summary
+  const di = document.getElementById('shareDarkIndex');
+  di.innerHTML = `<div style="text-align:center;font-size:13px;color:#8888a0">暗黑指数 ${resultData.darkTotalPct}% | ${DARK_NAMES[resultData.dominant]} 主导</div>`;
+
+  // Generate QR code for share card
+  const qrContainer = document.getElementById('shareQRCode');
+  qrContainer.innerHTML = '';
+  const SITE_URL = 'https://aruun1212.github.io/personality-test/';
+  const qr = qrcode(0, 'M');
+  qr.addData(SITE_URL);
+  qr.make();
+  const qrImg = document.createElement('img');
+  qrImg.src = qr.createDataURL(4, 0);
+  qrImg.style.cssText = 'width:100px;height:100px;border-radius:8px;image-rendering:pixelated;';
+  qrContainer.appendChild(qrImg);
+
+  // Generate image
+  const template = document.getElementById('shareCardTemplate');
+  template.style.left = '0';
+
+  html2canvas(template, { scale: 2, backgroundColor: '#0a0a0f', useCORS: true }).then(canvas => {
+    template.style.left = '-9999px';
+    const img = document.getElementById('shareImage');
+    img.src = canvas.toDataURL('image/png');
+    document.getElementById('shareModal').classList.add('active');
+  }).catch(err => {
+    template.style.left = '-9999px';
+    showToast('生成失败，请尝试复制文案分享');
+  });
+}
+
+function closeShareModal() {
+  document.getElementById('shareModal').classList.remove('active');
+}
+
+function copyShareText() {
+  if (!resultData) return;
+  const p = resultData.personality;
+  const SITE_URL = 'https://aruun1212.github.io/personality-test/';
+  const text = `🤓☝️ 留步，你也有话说\n\n☀️ 我的内心OS是：\n"${p.s}"\n\n🌑 但我的暗面说：\n[点击揭示你的暗面]\n\n暗黑指数：${resultData.darkTotalPct}% | ${DARK_NAMES[resultData.dominant]} 主导\n\n🔗 你也来测测：${SITE_URL}`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('✅ 已复制到剪贴板');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ 已复制到剪贴板');
+  });
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ==================== RESTART ====================
+function restartQuiz() {
+  currentQ = 0;
+  answers = [];
+  resultData = null;
+  showSection('landing');
+}
+</script>
+</body>
+</html>
