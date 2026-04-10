@@ -58,9 +58,9 @@ body {
 /* ========== Quiz Page ========== */
 #quiz { justify-content: flex-start; padding-top: 40px; }
 .progress-bar-wrap { width: 100%; margin-bottom: 30px; }
-.progress-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); }
+.progress-hint { text-align: center; margin-bottom: 10px; font-size: 13px; color: var(--text-secondary); min-height: 20px; transition: opacity 0.3s; }
 .progress-track { width: 100%; height: 4px; background: #1e1e30; border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--gradient-main); border-radius: 2px; transition: width 0.4s ease; }
+.progress-fill { height: 100%; background: var(--gradient-main); border-radius: 2px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 .question-container { flex: 1; display: flex; flex-direction: column; }
 .question-scenario {
   font-size: 20px; font-weight: 700; line-height: 1.5; margin-bottom: 24px;
@@ -227,12 +227,9 @@ body {
 
 <!-- ========== Quiz Page ========== -->
 <div id="quiz" class="section">
-  <div class="progress-bar-wrap">
-    <div class="progress-info">
-      <span id="progressText">1 / 36</span>
-      <span id="progressPercent">3%</span>
-    </div>
-    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:3%"></div></div>
+          <div class="progress-bar-wrap">
+            <div class="progress-hint" id="progressHint">开始灵魂拷问...</div>
+            <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   </div>
   <div class="question-container">
     <div class="question-scenario" id="questionText"></div>
@@ -481,11 +478,31 @@ function startQuiz() {
 
 function renderQuestion() {
   const q = activeQuestions[currentQ];
-  const total = activeQuestions.length;
-  const pct = Math.round(((currentQ + 1) / total) * 100);
-  document.getElementById('progressText').textContent = `${currentQ + 1} / ${total}`;
-  document.getElementById('progressPercent').textContent = `${pct}%`;
-  document.getElementById('progressFill').style.width = `${pct}%`;
+
+  // Non-linear progress: first 8 questions = 0~70%, follow-ups fill 70~95%
+  // Final jump to 100% happens at finishQuiz
+  let visualPct;
+  if (currentQ < 8) {
+    visualPct = Math.round((currentQ / 8) * 70);
+  } else {
+    const r2Total = activeQuestions.length - 8;
+    const r2Done = currentQ - 8;
+    visualPct = 70 + (r2Total > 0 ? Math.round((r2Done / r2Total) * 25) : 25);
+  }
+  document.getElementById('progressFill').style.width = `${visualPct}%`;
+
+  // Fun contextual hints
+  const hints = [
+    '开始灵魂拷问...', '继续挖掘...', '越来越有意思了', '嗯，有点意思...',
+    '快到核心了', '灵魂正在被扫描...', '差不多摸清你了', '最后几个拷问...'
+  ];
+  const remainQ = activeQuestions.length - currentQ;
+  let hint;
+  if (remainQ <= 1) hint = '🔥 最后一问！';
+  else if (remainQ <= 3) hint = '✨ 马上就好...';
+  else if (currentQ < hints.length) hint = hints[currentQ];
+  else hint = '🔍 深入灵魂深处...';
+  document.getElementById('progressHint').textContent = hint;
 
   const qText = document.getElementById('questionText');
   const optList = document.getElementById('optionsList');
